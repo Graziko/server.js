@@ -8,7 +8,7 @@ const CATEGORIES = { '視覺': '6', '音樂': '1', '戲劇': '2', '舞蹈': '3',
 
 app.get('/api/events', async (req, res) => {
   try {
-    const today = new Date('2026-03-25'); // 💡 以今天為基準
+    const today = new Date('2026-03-25');
     const city = req.query.city || '全部';
     const catName = req.query.category || '視覺';
     
@@ -20,14 +20,9 @@ app.get('/api/events', async (req, res) => {
     const blacklist = ['線上 online', '付費課程', '認證班', '證照班', '培訓', '說明會', '研習', '招生', '管理師'];
 
     let combined = [...res1.data, ...res2.data].filter(item => {
-      // 1. 💡 檢查字有沒有不見 (標題必須存在)
       if (!item.title || item.title.trim() === "") return false;
-      
-      // 2. 💡 檢查是否過期 (解決 404 最有效的方法)
       const endDate = new Date(item.endDate);
       if (endDate < today) return false;
-
-      // 3. 💡 過濾詐騙與廣告
       const text = (item.title + (item.showInfo?.[0]?.locationName || '')).toLowerCase();
       return !blacklist.some(word => text.includes(word.toLowerCase()));
     });
@@ -42,10 +37,27 @@ app.get('/api/events', async (req, res) => {
 
     const events = filtered.slice(0, 32).map((item, index) => {
       const info = item.showInfo?.[0] || {};
-      // 💡 確保直達網址不是空值
-      const directUrl = item.sourceWebPromote || item.webSales || 
-                        `https://cloud.culture.tw/frontsite/event/eventSearchAction.do?method=doDetailView&uid=${item.uid}`;
       
+      // 💡 智慧網址判定邏輯
+      const promoteUrl = (item.sourceWebPromote || "").trim();
+      const salesUrl = (item.webSales || "").trim();
+      const backupUrl = `https://cloud.culture.tw/frontsite/event/eventSearchAction.do?method=doDetailView&uid=${item.uid}`;
+
+      let finalUrl = backupUrl; // 預設使用最穩定的詳情頁
+
+      // 如果網址夠「長」（通常包含路徑而非只是網域），且不是常見的入口網址，才使用它
+      const isGeneric = (url) => {
+        if (!url) return true;
+        const p = url.split('/');
+        return p.length <= 4; // 只有域名或域名+1層路徑，判定為「首頁」
+      };
+
+      if (promoteUrl && !isGeneric(promoteUrl)) {
+        finalUrl = promoteUrl;
+      } else if (salesUrl && !isGeneric(salesUrl)) {
+        finalUrl = salesUrl;
+      }
+
       return {
         id: item.uid || `ev-${index}`,
         title: item.title,
@@ -53,7 +65,7 @@ app.get('/api/events', async (req, res) => {
         searchQuery: (info.location || item.title).replace(/=/g, ''),
         date: item.startDate + ' ~ ' + item.endDate,
         img: item.imageUrl ? item.imageUrl.replace('http://', 'https://') : '',
-        officialUrl: directUrl,
+        officialUrl: finalUrl.replace(/==/g, ''), // 清除亂碼
         tag: item.categoryName || catName
       };
     });
