@@ -2,30 +2,29 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>幕前 Stage | 台灣展演 AI 懶人包</title>
     
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎭</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23020617%22/><text y=%22.9em%22 x=%225%22 font-size=%2280%22>🎭</text></svg>">
+
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="幕前 Stage">
-    <link rel="icon" type="image/png" href="/icon.png">
-    <link rel="apple-touch-icon" href="/icon.png">
 
     <style>
         :root { --primary: #6366f1; --accent: #bef264; --bg: #020617; }
         
+        /* 💡 全域修正：防止任何元素超出寬度 */
         * {
+            box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            outline: none;
         }
 
-        input, textarea, #search-box {
-            -webkit-user-select: text !important;
-            user-select: text !important;
-        }
+        input, #search-box { -webkit-user-select: text !important; user-select: text !important; }
 
         .bg-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
@@ -37,60 +36,60 @@
         body.is-fetching .bg-layer { animation: flowLines 3s linear infinite; }
         @keyframes flowLines { 0% { background-position: 0% 0%; } 100% { background-position: 200% 200%; } }
 
-        body { margin: 0; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; color: white; min-height: 100vh; padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
+        body { margin: 0; font-family: 'PingFang TC', system-ui, sans-serif; color: white; min-height: 100vh; padding-bottom: 80px; overflow-x: hidden; }
         
         .cat-bar {
-            display: flex; justify-content: center; gap: 8px; padding: 15px;
+            display: flex; justify-content: center; gap: 5px; padding: 15px 10px;
             background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .cat-item { color: #94a3b8; cursor: pointer; font-weight: 600; padding: 8px 16px; font-size: 0.85rem; border-radius: 50px; transition: 0.2s; }
+        .cat-item { color: #94a3b8; cursor: pointer; font-weight: 600; padding: 8px 12px; font-size: 0.8rem; border-radius: 50px; }
         .cat-item.active { color: var(--accent); background: rgba(190, 242, 100, 0.1); }
-        .cat-item:active { transform: scale(0.9); opacity: 0.7; }
 
-        /* 💡 修正：Header 空間與字體優化 */
-        header { padding: 40px 10px 10px 10px; text-align: center; }
+        /* 💡 修正：暴力標題去斷行方案 */
+        header { padding: 30px 15px 10px 15px; text-align: center; width: 100%; }
         header h1 { 
-            /* 使用 clamp 讓字體在 1.5rem 到 2.2rem 之間根據螢幕寬度自動縮放 */
-            font-size: clamp(1.5rem, 8vw, 2.2rem); 
-            margin: 0; 
-            letter-spacing: 1px; /* 稍微縮小字距防止擠壓 */
+            font-size: min(7.5vw, 2.2rem); /* 根據寬度自動縮小，絕不超過 2.2rem */
+            margin: 0 auto; 
+            padding: 0;
+            display: block;
+            width: fit-content;
+            max-width: 100%;
+            letter-spacing: 0px; 
             text-shadow: 0 0 20px var(--primary);
-            white-space: nowrap; /* 💡 強制不換行 */
+            white-space: nowrap; /* 💡 絕對不准換行 */
             overflow: hidden;
-            text-overflow: ellipsis;
+            text-overflow: clip; /* 即使擠壓也不要有點點點，保持完整感 */
         }
 
-        .live-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(190, 242, 100, 0.1); color: var(--accent); padding: 5px 15px; border-radius: 50px; font-size: 0.75rem; margin-top: 15px; border: 1px solid rgba(190, 242, 100, 0.2); }
-        .dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .live-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(190, 242, 100, 0.1); color: var(--accent); padding: 5px 15px; border-radius: 50px; font-size: 0.7rem; margin-top: 15px; border: 1px solid rgba(190, 242, 100, 0.2); }
+        .dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        .filter-wrapper { background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(15px); position: sticky; top: 62px; z-index: 900; padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px; scrollbar-width: none; }
+        .filter-wrapper { background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(15px); position: sticky; top: 60px; z-index: 900; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding: 0 15px; scrollbar-width: none; }
         .filter-bar::-webkit-scrollbar { display: none; }
-        .filter-btn { padding: 8px 22px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.05); color: white; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+        .filter-btn { padding: 8px 18px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); color: white; cursor: pointer; white-space: nowrap; font-size: 0.8rem; }
         .filter-btn.active { background: var(--primary); border-color: var(--primary); }
-        .filter-btn:active { transform: scale(0.95); }
 
-        main { max-width: 1200px; margin: 25px auto; padding: 0 20px; }
-        .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; align-items: stretch; }
+        main { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
 
-        .pulse-skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; width: 100%; grid-column: 1 / -1; }
-        .skeleton-card { background: rgba(15, 23, 42, 0.6); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.03); height: 380px; position: relative; overflow: hidden; animation: skeleton-pulse 2s infinite ease-in-out; }
-        .skeleton-card::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.08), transparent); transform: translateX(-100%); animation: sweep 2s infinite; }
-        @keyframes sweep { 100% { transform: translateX(100%); } }
-        @keyframes skeleton-pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.9; } }
+        /* 深色骨架屏 */
+        .pulse-skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; width: 100%; grid-column: 1 / -1; }
+        .skeleton-card { background: rgba(15, 23, 42, 0.6); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.03); height: 360px; position: relative; overflow: hidden; }
+        .skeleton-card::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.08), transparent); animation: sweep 2s infinite; }
+        @keyframes sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-        .card { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(15px); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; height: 100%; transition: 0.3s; }
-        .card:active { transform: scale(0.97); }
-        
-        .img-container { width: 100%; height: 180px; background: #1e293b; overflow: hidden; }
+        .card { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(15px); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; height: 100%; }
+        .card:active { transform: scale(0.97); transition: 0.1s; }
+        .img-container { width: 100%; height: 170px; background: #1e293b; overflow: hidden; }
         .card-img { width: 100%; height: 100%; object-fit: cover; }
-        .card-body { padding: 22px; flex-grow: 1; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
-        h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: #f8fafc; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-weight: 700; }
-        .meta { font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; }
-        .card-footer { padding: 15px 22px; background: rgba(15, 23, 42, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; margin-top: auto; }
-        .btn-link { color: var(--accent); text-decoration: none; font-size: 0.8rem; font-weight: 800; }
+        .card-body { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+        h3 { margin: 0 0 10px 0; font-size: 1rem; color: #f8fafc; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-weight: 700; line-height: 1.4; }
+        .meta { font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; }
+        .card-footer { padding: 12px 18px; background: rgba(15, 23, 42, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; margin-top: auto; }
+        .btn-link { color: var(--accent); text-decoration: none; font-size: 0.75rem; font-weight: 800; }
     </style>
 </head>
 <body>
@@ -103,7 +102,7 @@
     </div>
     <header>
         <h1>🎭 幕前 Stage</h1>
-        <div class="live-tag"><span class="dot"></span> 實況同步中</div>
+        <div class="live-tag"><span class="dot"></span> AI 實況同步</div>
     </header>
 
     <div class="filter-wrapper">
@@ -113,7 +112,6 @@
             <button class="filter-btn" onclick="window.changeCity('桃園', this)">桃園</button>
             <button class="filter-btn" onclick="window.changeCity('新竹', this)">新竹</button>
             <button class="filter-btn" onclick="window.changeCity('台中', this)">台中</button>
-            <button class="filter-btn" onclick="window.changeCity('嘉義', this)">嘉義</button>
             <button class="filter-btn" onclick="window.changeCity('台南', this)">台南</button>
             <button class="filter-btn" onclick="window.changeCity('高雄', this)">高雄</button>
             <button class="filter-btn" onclick="window.changeCity('宜蘭', this)">宜蘭</button>
@@ -143,7 +141,7 @@
         window.fetchEvents = async () => {
             document.body.classList.add('is-fetching');
             const container = document.getElementById('event-container');
-            container.innerHTML = `<div class="pulse-skeleton-grid">${`<div class="skeleton-card"><div class="sk-img"></div><div class="sk-body"><div class="sk-line" style="width:80%;"></div><div class="sk-line" style="width:50%;"></div></div></div>`.repeat(8)}</div>`;
+            container.innerHTML = `<div class="pulse-skeleton-grid">${`<div class="skeleton-card"></div>`.repeat(6)}</div>`;
             try {
                 const res = await fetch(`/api/events?city=${encodeURIComponent(window.currentCity)}&category=${encodeURIComponent(window.currentCategory)}`);
                 const events = await res.json();
@@ -154,21 +152,21 @@
 
         window.renderEvents = (events) => {
             const container = document.getElementById('event-container');
-            if (!events || events.length === 0) { container.innerHTML = '<div style="text-align:center; padding:50px;">😭 目前沒有新的展演</div>'; return; }
+            if (!events || events.length === 0) { container.innerHTML = '<div style="text-align:center; padding:50px;">😭 沒找到展演</div>'; return; }
             container.innerHTML = `<div class="event-grid">${events.map((e, i) => `
                 <div class="card">
                     <a href="${e.url}" target="_blank" class="card-body" style="padding:0;">
                         <div class="img-container">
                             <img class="card-img" src="${e.img}" onerror="this.onerror=null; this.src='https://picsum.photos/seed/${e.id}${i}/600/400';">
                         </div>
-                        <div style="padding:22px;">
+                        <div style="padding:18px;">
                             <h3>${e.title}</h3>
                             <div class="meta">📍 ${e.location}</div>
                             <div class="meta">📅 ${e.date}</div>
                         </div>
                     </a>
                     <div class="card-footer">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.searchQuery)}" target="_blank" class="btn-link">📍 地圖導航</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.searchQuery)}" target="_blank" class="btn-link">📍 地圖</a>
                     </div>
                 </div>`).join('')}</div>`;
         }
