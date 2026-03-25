@@ -6,6 +6,35 @@
     <title>幕前 Stage | 全台展演 AI 懶人包</title>
     <link rel="icon" type="image/png" href="/icon.png">
     <style>
+        /* 💡 讓網頁摸起來像原生 App 的高級設定 */
+* {
+    -webkit-tap-highlight-color: transparent; /* 移除點擊時的醜藍框 */
+    -webkit-touch-callout: none; /* 禁止長按圖片跳出選單 */
+    user-select: none; /* 禁止選取文字，讓它更像軟體 */
+}
+
+/* 輸入框還是要能選取，不然搜尋不能用 */
+input, #search-box {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
+/* 💡 增加觸摸反饋：按下去的時候微微縮小 */
+.card:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+}
+
+.cat-item:active, .filter-btn:active {
+    background: rgba(190, 242, 100, 0.4);
+    transform: scale(0.95);
+}
+
+/* 💡 平滑滾動，讓手機滑起來不生硬 */
+html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
         :root { --primary: #6366f1; --accent: #bef264; --bg: #020617; }
         
         /* 💡 背景：流動線條 */
