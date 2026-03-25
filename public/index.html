@@ -13,14 +13,14 @@
     <link rel="apple-touch-icon" href="/icon.png">
 
     <style>
-        :root { --primary: #6366f1; --bg: #f8fafc; --aurora: #4f46e5; }
+        :root { --primary: #6366f1; --bg: #f8fafc; --accent: #bef264; --aurora: #4f46e5; }
         @media (prefers-color-scheme: dark) { :root { --bg: #0f172a; } body { background: #0f172a; color: white; } .card { background: #1e293b !important; border-color: #334155 !important; } .filter-wrapper { background: rgba(15,23,42,0.8) !important; } }
         
         body { font-family: 'PingFang TC', sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding-bottom: 100px; }
         header { background: #0d1117; color: white; padding: 60px 20px; text-align: center; background-image: radial-gradient(at 10% 10%, var(--aurora) 0px, transparent 50%), radial-gradient(at 90% 20%, #7e22ce 0px, transparent 50%), radial-gradient(at 50% 90%, #f43f5e 0px, transparent 50%); clip-path: ellipse(150% 100% at 50% 0%); }
         .cat-bar { display: flex; justify-content: center; gap: 8px; padding: 15px; background: #0f172a; position: sticky; top: 0; z-index: 1000; overflow-x: auto; scrollbar-width: none; }
         .cat-item { color: #94a3b8; cursor: pointer; font-weight: 600; padding: 8px 12px; white-space: nowrap; font-size: 0.85rem; }
-        .cat-item.active { color: #bef264; background: rgba(190, 242, 100, 0.1); border-radius: 8px; }
+        .cat-item.active { color: var(--accent); background: rgba(190, 242, 100, 0.1); border-radius: 8px; }
         .filter-wrapper { background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); position: sticky; top: 51px; z-index: 900; padding: 12px 0; border-bottom: 1px solid #eee; }
         .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding: 0 15px; max-width: 1200px; margin: 0 auto; scrollbar-width: none; }
         .filter-btn { padding: 6px 18px; border-radius: 50px; border: 1px solid #ddd; background: white; white-space: nowrap; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
@@ -30,7 +30,6 @@
         main { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
         .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; transition: 0.3s; position: relative; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 3px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; z-index: 5; }
         .card-link { text-decoration: none; color: inherit; display: block; }
         .card-img { width: 100%; height: 160px; object-fit: cover; background: #eee; }
@@ -41,8 +40,8 @@
         .btn-map { color: var(--primary); text-decoration: none; font-size: 0.8rem; font-weight: 700; }
 
         /* 💡 PWA 提示欄 */
-        #pwa-banner { display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: #0f172a; color: white; padding: 15px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2000; justify-content: space-between; align-items: center; }
-        .banner-btn { background: #bef264; color: #0f172a; border: none; padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        #pwa-banner { display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: #0f172a; color: white; padding: 15px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2000; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        .banner-btn { background: var(--accent); color: #0f172a; border: none; padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; }
         #pwa-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; backdrop-filter: blur(5px); }
         .modal-content { position: absolute; bottom: 0; width: 100%; background: white; border-radius: 24px 24px 0 0; padding: 30px 20px; box-sizing: border-box; text-align: center; color: #1e293b; }
         .loading { text-align: center; padding: 60px 0; color: #94a3b8; grid-column: 1 / -1; }
@@ -61,7 +60,7 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <img src="/icon.png" width="80" style="border-radius: 20px; margin-bottom: 15px;">
             <h2 style="margin: 0;">🎭 幕前 Stage</h2>
-            <p style="color: #64748b; font-size: 0.9rem; line-height: 1.6;">iPhone 請點擊下方「分享」按鈕<br>選擇「<b>加入主畫面</b>」即可安裝。</p>
+            <p style="color: #64748b; font-size: 0.9rem; line-height: 1.6;">iPhone 請點擊下方的「分享」按鈕<br>選擇「<b>加入主畫面</b>」即可安裝。</p>
             <button class="banner-btn" style="width: 100%; padding: 15px; margin-top: 20px;" onclick="document.getElementById('pwa-modal').style.display='none'">我知道了</button>
         </div>
     </div>
@@ -73,7 +72,7 @@
         <div class="cat-item" onclick="changeCategory('市集', this)">市集/綜合</div>
     </div>
 
-    <header><h1>🎭 幕前 Stage</h1><p>全台精選展演．AI 過濾</p></header>
+    <header><h1>🎭 幕前 Stage</h1><p>全台精選展演．AI 清理過濾</p></header>
 
     <div class="filter-wrapper">
         <div class="filter-bar">
@@ -84,7 +83,7 @@
         </div>
     </div>
 
-    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動名稱、場館..." oninput="filterEvents()"></div>
+    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動名稱、場館、松菸、駁二..." oninput="filterEvents()"></div>
     <main id="event-container"></main>
 
     <script>
@@ -100,7 +99,7 @@
 
         async function fetchEvents() {
             const container = document.getElementById('event-container');
-            container.innerHTML = '<div class="loading">✨ 載入中...</div>';
+            container.innerHTML = '<div class="loading">✨ 載入精采展演中...</div>';
             try {
                 const res = await fetch(`/api/events?city=${currentCity}&category=${currentCategory}`);
                 allEvents = await res.json();
@@ -122,7 +121,7 @@
                             <div class="meta">📅 ${event.date}</div>
                         </div>
                     </a>
-                    <div class="card-footer"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-map">📍 開啟導航</a></div>
+                    <div class="card-footer"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-map">📍 開啟地圖導航</a></div>
                 </div>`).join('')}</div>`;
         }
 
