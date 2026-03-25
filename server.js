@@ -36,15 +36,13 @@ app.get('/api/events', async (req, res) => {
       return !blacklist.some(word => text.includes(word.toLowerCase()));
     });
 
-    // 城市過濾
     const cityKeywords = { '台北': ['台北', '臺北'], '台中': ['台中', '臺中'], '高雄': ['高雄'] };
     if (city !== '全部') {
       const keywords = cityKeywords[city] || [city];
       rawEvents = rawEvents.filter(item => keywords.some(k => JSON.stringify(item).includes(k)));
     }
 
-    // 💡 404 並行過濾
-    const checkPromises = rawEvents.slice(0, 20).map(async (item) => {
+    const checkPromises = rawEvents.slice(0, 24).map(async (item) => {
       const info = item.showInfo?.[0] || {};
       const backupUrl = `https://cloud.culture.tw/frontsite/event/eventSearchAction.do?method=doDetailView&uid=${item.uid}`;
       let finalUrl = backupUrl;
@@ -53,7 +51,7 @@ app.get('/api/events', async (req, res) => {
       if (riskyUrl && riskyUrl.length > 25) {
         const live = await isUrlLive(riskyUrl);
         if (live) finalUrl = riskyUrl;
-        else return null; // 404 直接踢掉
+        else return null; 
       }
 
       return {
@@ -61,7 +59,8 @@ app.get('/api/events', async (req, res) => {
         location: (info.locationName || '地點詳見官網').replace(/=/g, ''),
         searchQuery: (info.location || item.title).replace(/=/g, ''),
         date: item.startDate + ' ~ ' + item.endDate,
-        img: item.imageUrl ? item.imageUrl.replace('http://', 'https://') : '',
+        // 💡 核心修正：尊重原圖，不強制升級 https
+        img: item.imageUrl ? item.imageUrl : '', 
         url: finalUrl
       };
     });
