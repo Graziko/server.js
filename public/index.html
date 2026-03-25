@@ -7,166 +7,88 @@
     <link rel="icon" type="image/png" href="/icon.png">
     <link rel="manifest" href="/manifest.json">
     <style>
-        :root { 
-            --primary: #6366f1; 
-            --accent: #bef264; 
-            --bg-dark: #020617; /* 更邃的劇場底色 */
-        }
-
-        /* 💡 核心：全新的「動態線條」背景層 (萊姆綠微光) */
-        .bg-gradient {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            background-color: var(--bg-dark);
+        :root { --primary: #6366f1; --accent: #bef264; --bg: #020617; }
+        
+        /* 💡 核心：萊姆綠「流動線條」背景 */
+        .bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background-color: var(--bg);
             background-image: repeating-linear-gradient(
                 -45deg,
-                rgba(190, 242, 100, 0.03) 0px, /* 微小的萊姆綠線條 */
-                rgba(190, 242, 100, 0.03) 1px,
+                rgba(190, 242, 100, 0.04) 0px,
+                rgba(190, 242, 100, 0.04) 1px,
                 transparent 1px,
-                transparent 30px /* 線條間距 */
+                transparent 30px
             );
             background-size: 200% 200%;
-            animation: moveLines 60s linear infinite; /* 線條緩慢滑動 */
+            animation: flowLines 60s linear infinite;
         }
 
-        /* 💡 核心 2：當「正在抓取」時，背景線條會閃爍加速 (我有在做事！) */
-        body.is-fetching .bg-gradient {
-            animation: moveLines 5s linear infinite, glowPulse 1s ease infinite; 
-            filter: blur(2px); /* 抓取時微微模糊，增加質感 */
+        /* 💡 當正在抓取資料時，線條會加速並閃爍 */
+        body.is-fetching .bg-layer {
+            animation: flowLines 3s linear infinite;
+            opacity: 0.8;
         }
 
-        @keyframes moveLines {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 200% 200%; }
-        }
-        @keyframes glowPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
-
-        body {
-            margin: 0;
-            padding-bottom: 80px;
-            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            color: white;
-            min-height: 100vh;
+        @keyframes flowLines { 
+            0% { background-position: 0% 0%; } 
+            100% { background-position: 200% 200%; } 
         }
 
-        /* 毛玻璃導航欄 */
+        body { margin: 0; font-family: 'PingFang TC', sans-serif; color: white; min-height: 100vh; padding-bottom: 80px; }
+        
         .cat-bar {
-            display: flex; justify-content: center; gap: 12px; padding: 15px;
-            background: rgba(2, 6, 23, 0.85); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            position: sticky; top: 0; z-index: 1000;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; justify-content: center; gap: 8px; padding: 15px;
+            background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(20px);
+            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        .cat-item { color: #94a3b8; cursor: pointer; font-weight: 600; padding: 8px 16px; white-space: nowrap; transition: 0.3s; }
+        .cat-item { color: #94a3b8; cursor: pointer; font-weight: 600; padding: 8px 16px; transition: 0.3s; font-size: 0.85rem; white-space: nowrap; }
         .cat-item.active { color: var(--accent); background: rgba(190, 242, 100, 0.1); border-radius: 50px; }
 
-        header { padding: 40px 20px 20px 20px; text-align: center; }
-        header h1 { font-size: 2rem; margin: 0; letter-spacing: 2px; text-shadow: 0 0 20px var(--primary); }
-
-        /* 💡 核心：萊姆綠「實況同步燈 (Live Sync Dot)」 */
-        .sync-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-            color: #bef264;
-            font-size: 0.75rem;
-            font-weight: 700;
-            background: rgba(190, 242, 100, 0.1);
-            padding: 4px 12px;
-            border-radius: 50px;
-        }
-        .live-dot {
-            width: 8px; height: 8px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            animation: pulseAccent 2s infinite; /* 規律脈衝 */
-            box-shadow: 0 0 10px var(--accent);
-        }
-        @keyframes pulseAccent { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
+        header { padding: 40px 20px; text-align: center; }
+        header h1 { font-size: 2.2rem; margin: 0; letter-spacing: 2px; text-shadow: 0 0 20px var(--primary); }
+        .live-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(190, 242, 100, 0.1); color: var(--accent); padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; margin-top: 10px; }
+        .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } 100% { opacity: 1; transform: scale(1); } }
 
         .filter-wrapper {
-            background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            position: sticky; top: 62px; z-index: 900; padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(15px);
+            position: sticky; top: 62px; z-index: 900; padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-
         .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px; max-width: 1200px; margin: 0 auto; scrollbar-width: none; }
-        .filter-btn {
-            padding: 8px 20px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.05); color: white; cursor: pointer; font-weight: 600; transition: 0.3s;
-        }
-        .filter-btn.active { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 15px var(--primary); }
+        .filter-btn { padding: 8px 20px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.05); color: white; cursor: pointer; font-size: 0.8rem; }
+        .filter-btn.active { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
 
         .search-area { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        #search-box { width: 100%; padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); color: white; outline: none; transition: 0.3s; }
-        #search-box:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(190, 242, 100, 0.3); }
+        #search-box { width: 100%; padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); color: white; outline: none; }
 
         main { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        
-        .event-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-            gap: 20px; 
-            align-items: stretch;
-        }
+        .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; align-items: stretch; }
 
-        /* 強化卡片設計 (萊姆綠懸停) */
         .card {
-            background: rgba(30, 41, 59, 0.7); 
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-radius: 20px; overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex; 
-            flex-direction: column;
-            height: 100%;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
+            background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px);
+            border-radius: 20px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; flex-direction: column; height: 100%; transition: 0.3s;
         }
-        .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
 
-        .img-container { width: 100%; height: 160px; background: #1e293b; overflow: hidden; position: relative; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .card:hover .card-img { transform: scale(1.05); }
+        .img-container { width: 100%; height: 170px; background: #1e293b; overflow: hidden; position: relative; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
 
-        .tag { position: absolute; top: 10px; left: 10px; background: var(--primary); color: white; padding: 3px 10px; border-radius: 50px; font-size: 0.65rem; font-weight: 800; z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .card-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+        h3 { margin: 0 0 10px 0; font-size: 1rem; line-height: 1.4; color: #f8fafc; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .meta { font-size: 0.75rem; color: #94a3b8; margin-bottom: 5px; }
 
-        .card-body { 
-            padding: 18px; 
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        h3 { 
-            margin: 0 0 10px 0; font-size: 1rem; line-height: 1.4; color: #f8fafc; font-weight: 700;
-            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-        }
-        
-        .meta { font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px; }
-        
-        .card-footer { 
-            padding: 12px 18px; 
-            background: rgba(15, 23, 42, 0.6);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex; justify-content: space-between; align-items: center;
-            margin-top: auto;
-        }
-        
+        .card-footer { padding: 12px 20px; background: rgba(15, 23, 42, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; margin-top: auto; }
         .btn-link { color: var(--accent); text-decoration: none; font-size: 0.75rem; font-weight: 700; }
         .btn-org { font-size: 0.7rem; color: #64748b; text-decoration: none; }
 
-        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 0; grid-column: 1 / -1; }
-        .loader { width: 40px; height: 40px; border: 4px solid var(--accent); border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; box-shadow: 0 0 10px var(--accent); }
+        .loader { width: 35px; height: 35px; border: 4px solid var(--accent); border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="bg-gradient"></div>
+    <div class="bg-layer"></div>
 
     <div class="cat-bar">
         <div class="cat-item active" onclick="changeCategory('視覺', this)">視覺藝術</div>
@@ -177,10 +99,7 @@
 
     <header>
         <h1>🎭 幕前 Stage</h1>
-        <div class="sync-status">
-            <span class="live-dot"></span>
-            <span>文化部資料已即時同步</span>
-        </div>
+        <div class="live-tag"><span class="dot"></span> AI 正在過濾失效連結</div>
     </header>
 
     <div class="filter-wrapper">
@@ -192,49 +111,57 @@
         </div>
     </div>
 
-    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動名稱、場館..."></div>
-    
+    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動、場館..."></div>
     <main id="event-container"></main>
 
     <script>
         let allEvents = [];
         let currentCity = '全部', currentCategory = '視覺';
         
+        // 💡 修正後的分類點擊函數
+        function changeCategory(cat, el) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+            fetchEvents(); // 核心：確保這裡有被呼叫
+        }
+
+        function changeCity(city, btn) {
+            currentCity = city;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            fetchEvents();
+        }
+
         async function fetchEvents() {
-            // 💡 抓取前，給 body 加上正在抓取的 Class (背景線條加速)
             document.body.classList.add('is-fetching');
-            
             const container = document.getElementById('event-container');
-            container.innerHTML = `<div class="loading-container"><span class="loader"></span></div>`;
+            container.innerHTML = `<div style="text-align:center; padding:100px;"><span class="loader"></span><div style="margin-top:20px; color:#94a3b8; font-size:0.8rem;">正在校準資料...</div></div>`;
             try {
                 const res = await fetch(`/api/events?city=${currentCity}&category=${currentCategory}`);
                 allEvents = await res.json();
                 renderEvents(allEvents);
-            } catch (e) { container.innerHTML = '<div class="loading-container">連線超時 😭</div>'; }
-            finally {
-                // 💡 抓取後，移除 Class
-                document.body.classList.remove('is-fetching');
-            }
+            } catch (e) { container.innerHTML = '連線失敗 😭'; }
+            finally { document.body.classList.remove('is-fetching'); }
         }
 
         function renderEvents(events) {
             const container = document.getElementById('event-container');
-            if (events.length === 0) { container.innerHTML = '<div class="loading-container">😭 找不到活動</div>'; return; }
+            if (events.length === 0) { container.innerHTML = '<div style="text-align:center; padding:50px;">😭 目前沒有符合條件的演出</div>'; return; }
             container.innerHTML = `<div class="event-grid">${events.map(event => `
                 <div class="card">
-                    <div class="tag">${event.tag}</div>
-                    <a href="${event.url}" target="_blank" class="card-link" style="text-decoration:none; color:inherit; display:contents;">
+                    <a href="${event.url}" target="_blank" class="card-body" style="padding:0;">
                         <div class="img-container">
                             <img class="card-img" src="${event.img}" onerror="this.src='https://picsum.photos/600/400?random=${event.id}';">
                         </div>
-                        <div class="card-body">
+                        <div style="padding:20px;">
                             <h3>${event.title}</h3>
                             <div class="meta">📍 ${event.location}</div>
                             <div class="meta">📅 ${event.date}</div>
                         </div>
                     </a>
                     <div class="card-footer">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-link">📍 地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-link">📍 地圖導航</a>
                         <span class="btn-org">穩定資料來源</span>
                     </div>
                 </div>`).join('')}</div>`;
@@ -245,8 +172,6 @@
             renderEvents(allEvents.filter(e => e.title.toLowerCase().includes(term) || e.location.toLowerCase().includes(term)));
         }
 
-        function changeCity(city, btn) { currentCity = city; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); fetchEvents(); }
-        function changeCategory(cat, el) { currentCategory = cat; document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); document.documentElement.style.setProperty('--aurora', themes[cat]); fetchEvents(); }
         fetchEvents();
     </script>
 </body>
