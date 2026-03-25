@@ -25,20 +25,18 @@
         #search-box { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #e2e8f0; font-size: 1rem; outline: none; box-sizing: border-box; }
         main { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
         .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; transition: 0.3s; position: relative; min-height: 380px; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; position: relative; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 3px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; z-index: 5; }
-        .card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-        .card-img { width: 100%; height: 160px; object-fit: cover; background: #eee; }
-        .card-body { padding: 18px; flex-grow: 1; }
-        
-        /* 💡 標題強化 */
-        h3 { margin: 0 0 10px 0; font-size: 1rem; line-height: 1.4; color: #1e293b; font-weight: 700; height: 2.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .card-img { width: 100%; height: 160px; object-fit: cover; background: #eee; cursor: pointer; }
+        .card-body { padding: 18px; flex-grow: 1; cursor: pointer; text-decoration: none; color: inherit; display: block; }
+        h3 { margin: 0 0 10px 0; font-size: 1rem; line-height: 1.4; color: #1e293b; font-weight: 700; }
         @media (prefers-color-scheme: dark) { h3 { color: white; } }
-        
         .meta { font-size: 0.75rem; color: #64748b; margin-bottom: 6px; display: block; }
-        .card-footer { padding: 12px 18px; background: #fcfcfc; border-top: 1px solid #f1f5f9; }
-        .btn-map { color: var(--primary); text-decoration: none; font-size: 0.8rem; font-weight: 700; }
+        
+        .card-footer { padding: 12px 18px; background: #fcfcfc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .btn-link { color: var(--primary); text-decoration: none; font-size: 0.75rem; font-weight: 700; }
+        .btn-org { font-size: 0.75rem; color: #94a3b8; text-decoration: underline; }
         .loading { text-align: center; padding: 60px 0; color: #94a3b8; grid-column: 1 / -1; }
     </style>
 </head>
@@ -49,7 +47,7 @@
         <div class="cat-item" onclick="changeCategory('戲劇', this)">戲劇舞台</div>
         <div class="cat-item" onclick="changeCategory('市集', this)">市集/綜合</div>
     </div>
-    <header><h1>🎭 幕前 Stage</h1><p>全台精選展演．智慧導航過濾</p></header>
+    <header><h1>🎭 幕前 Stage</h1><p>全台精選展演．絕對穩定版</p></header>
     <div class="filter-wrapper">
         <div class="filter-bar">
             <button class="filter-btn active" onclick="changeCity('全部', this)">全部</button>
@@ -58,7 +56,7 @@
             <button class="filter-btn" onclick="changeCity('高雄', this)">高雄</button>
         </div>
     </div>
-    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動、場館、地點..." oninput="filterEvents()"></div>
+    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動、場館..." oninput="filterEvents()"></div>
     <main id="event-container"></main>
     <script>
         let allEvents = [];
@@ -66,7 +64,7 @@
         const themes = { '視覺': '#4f46e5', '音樂': '#f43f5e', '戲劇': '#7e22ce', '市集': '#ec4899' };
         async function fetchEvents() {
             const container = document.getElementById('event-container');
-            container.innerHTML = '<div class="loading">✨ 正在校正資料連結...</div>';
+            container.innerHTML = '<div class="loading">✨ 正在調度穩定線路...</div>';
             try {
                 const res = await fetch(`/api/events?city=${currentCity}&category=${currentCategory}`);
                 allEvents = await res.json();
@@ -79,7 +77,7 @@
             container.innerHTML = `<div class="event-grid">${events.map(event => `
                 <div class="card">
                     <div class="tag">${event.tag}</div>
-                    <a href="${event.officialUrl}" target="_blank" class="card-link">
+                    <a href="${event.cultureUrl}" target="_blank" class="card-link">
                         <img class="card-img" src="${event.img}" onerror="this.src='https://picsum.photos/600/400?random=${event.id}';">
                         <div class="card-body">
                             <h3>${event.title}</h3>
@@ -87,7 +85,10 @@
                             <span class="meta">📅 ${event.date}</span>
                         </div>
                     </a>
-                    <div class="card-footer"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-map">📍 地圖導航</a></div>
+                    <div class="card-footer">
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-link">📍 地圖導航</a>
+                        ${event.organizerUrl ? `<a href="${event.organizerUrl}" target="_blank" class="btn-org">主辦官網</a>` : ''}
+                    </div>
                 </div>`).join('')}</div>`;
         }
         function filterEvents() {

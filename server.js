@@ -17,7 +17,7 @@ app.get('/api/events', async (req, res) => {
       axios.get(`https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=17`)
     ]);
 
-    const blacklist = ['線上 online', '付費課程', '認證班', '證照班', '培訓', '說明會', '研習', '招生', '管理師'];
+    const blacklist = ['線上 online', '付費課程', '認證班', '證照班', '培訓', '研習', '招生', '管理師'];
 
     let combined = [...res1.data, ...res2.data].filter(item => {
       if (!item.title || item.title.trim() === "") return false;
@@ -38,25 +38,11 @@ app.get('/api/events', async (req, res) => {
     const events = filtered.slice(0, 32).map((item, index) => {
       const info = item.showInfo?.[0] || {};
       
-      // 💡 智慧網址判定邏輯
-      const promoteUrl = (item.sourceWebPromote || "").trim();
-      const salesUrl = (item.webSales || "").trim();
-      const backupUrl = `https://cloud.culture.tw/frontsite/event/eventSearchAction.do?method=doDetailView&uid=${item.uid}`;
-
-      let finalUrl = backupUrl; // 預設使用最穩定的詳情頁
-
-      // 如果網址夠「長」（通常包含路徑而非只是網域），且不是常見的入口網址，才使用它
-      const isGeneric = (url) => {
-        if (!url) return true;
-        const p = url.split('/');
-        return p.length <= 4; // 只有域名或域名+1層路徑，判定為「首頁」
-      };
-
-      if (promoteUrl && !isGeneric(promoteUrl)) {
-        finalUrl = promoteUrl;
-      } else if (salesUrl && !isGeneric(salesUrl)) {
-        finalUrl = salesUrl;
-      }
+      // 💡 絕對穩定的文化部詳情頁 (0% 404)
+      const stableUrl = `https://cloud.culture.tw/frontsite/event/eventSearchAction.do?method=doDetailView&uid=${item.uid}`;
+      
+      // 💡 可能有坑的主辦方官網
+      const riskyUrl = (item.sourceWebPromote || item.webSales || "").trim().replace(/==/g, '');
 
       return {
         id: item.uid || `ev-${index}`,
@@ -65,7 +51,8 @@ app.get('/api/events', async (req, res) => {
         searchQuery: (info.location || item.title).replace(/=/g, ''),
         date: item.startDate + ' ~ ' + item.endDate,
         img: item.imageUrl ? item.imageUrl.replace('http://', 'https://') : '',
-        officialUrl: finalUrl.replace(/==/g, ''), // 清除亂碼
+        cultureUrl: stableUrl,
+        organizerUrl: riskyUrl,
         tag: item.categoryName || catName
       };
     });
