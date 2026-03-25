@@ -6,7 +6,6 @@ app.use(express.static('public'));
 
 const CATEGORIES = { '視覺': '6', '音樂': '1', '戲劇': '2', '舞蹈': '3', '講座': '7', '市集': '15' };
 
-// 💡 檢查網址是否 404
 async function isUrlLive(url) {
   if (!url || url.includes('cloud.culture.tw')) return true;
   try {
@@ -27,13 +26,21 @@ app.get('/api/events', async (req, res) => {
     ]);
 
     const blacklist = ['線上', '付費課程', '認證班', '證照班', '培訓', '研習', '招生', '管理師'];
+    
+    // 💡 核心修正：使用 Set 來紀錄已出現的標題，防止重複活動
+    const seenTitles = new Set();
 
     let rawEvents = [...res1.data, ...res2.data].filter(item => {
-      if (!item.title) return false;
+      if (!item.title || seenTitles.has(item.title)) return false; // 如果標題重複，直接剔除
       const endDate = new Date(item.endDate);
       if (endDate < today) return false;
       const text = (item.title + (item.showInfo?.[0]?.locationName || '')).toLowerCase();
-      return !blacklist.some(word => text.includes(word.toLowerCase()));
+      const isBad = blacklist.some(word => text.includes(word.toLowerCase()));
+      if (!isBad) {
+        seenTitles.add(item.title); // 標記此標題已處理
+        return true;
+      }
+      return false;
     });
 
     const cityKeywords = { '台北': ['台北', '臺北'], '台中': ['台中', '臺中'], '高雄': ['高雄'] };
@@ -42,6 +49,7 @@ app.get('/api/events', async (req, res) => {
       rawEvents = rawEvents.filter(item => keywords.some(k => JSON.stringify(item).includes(k)));
     }
 
+    // 💡 檢查前 24 筆資料的網址存活狀況
     const checkPromises = rawEvents.slice(0, 24).map(async (item) => {
       const info = item.showInfo?.[0] || {};
       const backupUrl = `https://cloud.culture.tw/frontsite/event/eventSearchAction.do?method=doDetailView&uid=${item.uid}`;
@@ -55,12 +63,12 @@ app.get('/api/events', async (req, res) => {
       }
 
       return {
-        id: item.uid, title: item.title,
+        id: item.uid,
+        title: item.title,
         location: (info.locationName || '地點詳見官網').replace(/=/g, ''),
         searchQuery: (info.location || item.title).replace(/=/g, ''),
         date: item.startDate + ' ~ ' + item.endDate,
-        // 💡 核心修正：尊重原圖，不強制升級 https
-        img: item.imageUrl ? item.imageUrl : '', 
+        img: item.imageUrl || '', 
         url: finalUrl
       };
     });
