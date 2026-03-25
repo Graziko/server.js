@@ -1,72 +1,107 @@
-<style>
-    /* 新增：地區按鈕的樣式 */
-    .filter-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-    .filter-btn { 
-        padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; 
-        background: white; cursor: pointer; font-size: 0.9rem; transition: 0.3s;
-    }
-    .filter-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
-</style>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幕前 Stage | 台灣展演 AI 懶人包</title>
+    <style>
+        :root { --primary: #6366f1; --accent: #f43f5e; --bg: #fdfdfd; }
+        body { font-family: 'PingFang TC', sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding-bottom: 50px; }
+        
+        /* 頂部標題與漸層背景 */
+        header { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; padding: 50px 20px; text-align: center; clip-path: ellipse(150% 100% at 50% 0%); }
+        h1 { font-size: 2.5rem; margin: 0; font-weight: 800; letter-spacing: -1px; }
+        .subtitle { opacity: 0.9; font-weight: 300; margin-top: 10px; }
 
+        /* 滑動按鈕列 */
+        .filter-wrapper { position: sticky; top: 0; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); z-index: 100; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px; scrollbar-width: none; }
+        .filter-bar::-webkit-scrollbar { display: none; }
+        .filter-btn { padding: 10px 24px; border-radius: 50px; border: 1px solid #e2e8f0; background: white; white-space: nowrap; cursor: pointer; font-weight: 600; color: #64748b; transition: all 0.3s; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+
+        /* 內容區塊 */
+        main { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+        .event-grid { display: grid; gap: 25px; }
+        
+        /* 卡片設計升級 */
+        .card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .card-img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
+        .card-body { padding: 25px; }
+        
+        .tag { color: var(--accent); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+        h3 { margin: 0 0 15px 0; font-size: 1.4rem; line-height: 1.3; color: #0f172a; }
+        .meta { font-size: 0.9rem; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+
+        .ai-box { background: #f5f3ff; border-left: 4px solid #8b5cf6; padding: 15px; border-radius: 0 12px 12px 0; margin: 20px 0; }
+        .ai-text { font-size: 0.95rem; color: #4c1d95; margin: 0; font-weight: 500; }
+        
+        .loading { text-align: center; padding: 100px 0; color: #94a3b8; font-style: italic; }
+    </style>
+</head>
 <body>
     <header>
         <h1>🎭 幕前 Stage</h1>
-        <p class="subtitle">台灣展演活動的 AI 懶人包</p>
+        <p class="subtitle">為您從海量資料中挑選「對」的展演</p>
     </header>
 
-    <div class="filter-bar">
-        <button class="filter-btn active" onclick="changeCity('全部', this)">全部</button>
-        <button class="filter-btn" onclick="changeCity('台北', this)">台北</button>
-        <button class="filter-btn" onclick="changeCity('台中', this)">台中</button>
-        <button class="filter-btn" onclick="changeCity('高雄', this)">高雄</button>
+    <div class="filter-wrapper">
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="changeCity('全部', this)">全部</button>
+            <button class="filter-btn" onclick="changeCity('台北', this)">台北</button>
+            <button class="filter-btn" onclick="changeCity('桃園', this)">桃園</button>
+            <button class="filter-btn" onclick="changeCity('新竹', this)">新竹</button>
+            <button class="filter-btn" onclick="changeCity('台中', this)">台中</button>
+            <button class="filter-btn" onclick="changeCity('台南', this)">台南</button>
+            <button class="filter-btn" onclick="changeCity('高雄', this)">高雄</button>
+        </div>
     </div>
 
-    <div id="event-container">
-        <div class="loading">✨ 正在為您挑選精采展演...</div>
-    </div>
+    <main id="event-container">
+        <div class="loading">✨ 正在整理精采展演...</div>
+    </main>
 
     <script>
-        let currentCity = '全部';
-
         async function fetchEvents(city = '全部') {
             const container = document.getElementById('event-container');
-            container.innerHTML = '<div class="loading">🔍 正在搜尋 ' + city + ' 的活動...</div>';
+            container.innerHTML = '<div class="loading">🔍 搜尋 ' + city + ' 中...</div>';
             
             try {
                 const response = await fetch(`/api/events?city=${city}`);
                 const events = await response.json();
                 
                 if (events.length === 0) {
-                    container.innerHTML = '<div class="loading">😭 該地區暫時沒有活動</div>';
+                    container.innerHTML = '<div class="loading">😭 暫時沒有活動，換個城市試試？</div>';
                     return;
                 }
 
-                container.innerHTML = events.map(event => `
+                container.innerHTML = `<div class="event-grid">${events.map(event => `
                     <div class="card">
-                        <span class="tag">視覺藝術</span>
-                        <h3>${event.title}</h3>
-                        <div class="info">📍 ${event.location}</div>
-                        <div class="info">📅 ${event.date}</div>
-                        <div class="ai-box">
-                            <div class="ai-title">🤖 幕前 AI 點評</div>
-                            <p class="ai-content">${event.aiSummary}</p>
+                        <img class="card-img" src="${event.img}" alt="活動圖片">
+                        <div class="card-body">
+                            <span class="tag">視覺藝術</span>
+                            <h3>${event.title}</h3>
+                            <div class="meta">📍 ${event.location}</div>
+                            <div class="meta">📅 ${event.date}</div>
+                            <div class="ai-box">
+                                <p class="ai-text">${event.aiSummary}</p>
+                            </div>
                         </div>
-                        <p class="desc">${event.description}</p>
                     </div>
-                `).join('');
+                `).join('')}</div>`;
             } catch (error) {
-                container.innerHTML = '<div class="loading">連線失敗 😭</div>';
+                container.innerHTML = '<div class="loading">連線失敗，請稍後再試 😭</div>';
             }
         }
 
         function changeCity(city, btn) {
-            // 切換按鈕顏色
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            // 重新抓取資料
             fetchEvents(city);
         }
 
         fetchEvents();
     </script>
 </body>
+</html>
