@@ -6,6 +6,7 @@ app.use(express.static('public'));
 
 const CATEGORIES = { '視覺': '6', '音樂': '1', '戲劇': '2', '舞蹈': '3', '講座': '7', '市集': '15' };
 
+// 檢查網址存活
 async function isUrlLive(url) {
   if (!url || url.includes('cloud.culture.tw')) return true;
   try {
@@ -27,29 +28,29 @@ app.get('/api/events', async (req, res) => {
 
     const blacklist = ['線上', '付費課程', '認證班', '證照班', '培訓', '研習', '招生', '管理師'];
     
-    // 💡 核心修正：使用 Set 來紀錄已出現的標題，防止重複活動
+    // 💡 核心：標題去重器
     const seenTitles = new Set();
 
     let rawEvents = [...res1.data, ...res2.data].filter(item => {
-      if (!item.title || seenTitles.has(item.title)) return false; // 如果標題重複，直接剔除
+      if (!item.title || seenTitles.has(item.title)) return false; 
       const endDate = new Date(item.endDate);
       if (endDate < today) return false;
       const text = (item.title + (item.showInfo?.[0]?.locationName || '')).toLowerCase();
       const isBad = blacklist.some(word => text.includes(word.toLowerCase()));
       if (!isBad) {
-        seenTitles.add(item.title); // 標記此標題已處理
+        seenTitles.add(item.title); // 記住這個標題，下次出現就踢掉
         return true;
       }
       return false;
     });
 
+    // 城市過濾
     const cityKeywords = { '台北': ['台北', '臺北'], '台中': ['台中', '臺中'], '高雄': ['高雄'] };
     if (city !== '全部') {
       const keywords = cityKeywords[city] || [city];
       rawEvents = rawEvents.filter(item => keywords.some(k => JSON.stringify(item).includes(k)));
     }
 
-    // 💡 檢查前 24 筆資料的網址存活狀況
     const checkPromises = rawEvents.slice(0, 24).map(async (item) => {
       const info = item.showInfo?.[0] || {};
       const backupUrl = `https://cloud.culture.tw/frontsite/event/eventSearchAction.do?method=doDetailView&uid=${item.uid}`;
