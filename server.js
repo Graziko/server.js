@@ -4,12 +4,23 @@ const app = express();
 
 app.use(express.static('public'));
 
+// 分類 ID 對照表
+const CATEGORIES = {
+  '視覺': '6',
+  '音樂': '1',
+  '戲劇': '2',
+  '舞蹈': '3',
+  '講座': '7'
+};
+
 app.get('/api/events', async (req, res) => {
   try {
     const city = req.query.city || '全部';
-    const url = 'https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=6';
-    
-    const response = await axios.get(url, { timeout: 6000 });
+    const catName = req.query.category || '視覺';
+    const catId = CATEGORIES[catName] || '6';
+
+    const url = `https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=${catId}`;
+    const response = await axios.get(url, { timeout: 8000 });
     const allData = response.data;
 
     const cityKeywords = {
@@ -30,20 +41,17 @@ app.get('/api/events', async (req, res) => {
       });
     }
 
-    // 💡 增加到 20 筆，讓網格看起來更豐富
     const events = filteredData.slice(0, 20).map((item, index) => {
-      // 處理圖片：如果原始網址是 http，強行換成 https 試試看
       let safeImg = item.imageUrl ? item.imageUrl.replace('http://', 'https://') : '';
-      
       return {
+        id: item.uid, // 增加一個唯一 ID 供收藏使用
         title: item.title,
         location: item.showInfo[0]?.locationName || '地點詳見官網',
+        address: item.showInfo[0]?.location || '',
         date: item.startDate + ' ~ ' + item.endDate,
-        description: (item.descriptionFilterHtml || "").substring(0, 60) + '...',
         img: safeImg,
-        // 隨機給幾種漂亮的預設背景圖，防止一片空白
-        fallbackImg: `https://picsum.photos/seed/${index + 123}/600/400`, 
-        aiSummary: item.title.includes("館") ? "🏛️ 推薦：室內優質展出，適合深度文藝愛好者。" : "✨ 推薦：當季熱門展覽，週末打卡首選！"
+        fallbackImg: `https://picsum.photos/seed/${item.uid}/600/400`, 
+        aiSummary: `🤖 幕前推薦：這場${catName}活動在${city}非常熱門，建議提早規劃行程！`
       };
     });
 
