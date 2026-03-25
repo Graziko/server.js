@@ -11,27 +11,20 @@ app.get('/api/events', async (req, res) => {
     const city = req.query.city || '全部';
     const catName = req.query.category || '視覺';
     
-    // 💡 同時抓取該類別 + 綜合類別，增加地點豐富度
     const [res1, res2] = await Promise.all([
       axios.get(`https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=${CATEGORIES[catName] || '6'}`),
       axios.get(`https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=17`)
     ]);
 
-    // 💡 垃圾過濾黑名單
-    const blacklist = ['線上 online', '付費課程', '認證班', '證照班', '培訓', '證照', '說明會', '研習', '招生'];
+    // 💡 詐騙與課程過濾器
+    const blacklist = ['線上 online', '付費課程', '認證班', '證照班', '說明會', '培訓', '研習', '招生'];
 
     let combined = [...res1.data, ...res2.data].filter(item => {
       const text = (item.title + (item.showInfo?.[0]?.locationName || '')).toLowerCase();
       return !blacklist.some(word => text.includes(word.toLowerCase()));
     });
 
-    const cityKeywords = {
-      '台北': ['台北', '臺北', '信義', '中正', '松山', '中山', '北投', '士林', '內湖', '文山', '華山', '松菸'],
-      '桃園': ['桃園', '中壢', '青埔'],
-      '台中': ['台中', '臺中', '草悟道', '歌劇院'],
-      '台南': ['台南', '臺南', '神農街', '美術館'],
-      '高雄': ['高雄', '駁二', '衛武營', '左營']
-    };
+    const cityKeywords = { '台北': ['台北', '臺北'], '桃園': ['桃園'], '台中': ['台中', '臺中'], '台南': ['台南', '臺南'], '高雄': ['高雄'] };
 
     let filtered = combined;
     if (city !== '全部') {
@@ -41,10 +34,7 @@ app.get('/api/events', async (req, res) => {
 
     const events = filtered.slice(0, 32).map((item, index) => {
       const info = item.showInfo?.[0] || {};
-      // 💡 精準直達連結：優先官網，其次售票，最後是文化部詳情頁
-      const directUrl = item.sourceWebPromote || item.webSales || 
-                        `https://cloud.culture.tw/frontsite/event/eventSearchAction.do?method=doDetailView&uid=${item.uid}`;
-      
+      const directUrl = item.sourceWebPromote || item.webSales || `https://cloud.culture.tw/frontsite/event/eventSearchAction.do?method=doDetailView&uid=${item.uid}`;
       return {
         id: item.uid || `ev-${index}`,
         title: item.title,
@@ -56,9 +46,8 @@ app.get('/api/events', async (req, res) => {
         tag: item.categoryName || catName
       };
     });
-
     res.json(events);
-  } catch (error) { res.status(500).json({ error: "調度失敗" }); }
+  } catch (error) { res.status(500).json({ error: "抓取失敗" }); }
 });
 
 module.exports = app;
