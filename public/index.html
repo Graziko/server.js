@@ -6,44 +6,129 @@
     <title>幕前 Stage | 台灣展演 AI 懶人包</title>
     <link rel="icon" type="image/png" href="/icon.png">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0d1117">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="/icon.png">
     <style>
-        :root { --primary: #6366f1; --bg: #f8fafc; --accent: #bef264; --aurora: #4f46e5; }
-        @media (prefers-color-scheme: dark) { :root { --bg: #0f172a; } body { background: #0f172a; color: white; } .card { background: #1e293b !important; border-color: #334155 !important; } .filter-wrapper { background: rgba(15,23,42,0.8) !important; } }
-        body { font-family: 'PingFang TC', sans-serif; background: var(--bg); color: #1e293b; margin: 0; padding-bottom: 80px; }
-        header { background: #0d1117; color: white; padding: 50px 20px; text-align: center; background-image: radial-gradient(at 10% 10%, var(--aurora) 0px, transparent 50%), radial-gradient(at 90% 20%, #7e22ce 0px, transparent 50%), radial-gradient(at 50% 90%, #f43f5e 0px, transparent 50%); clip-path: ellipse(150% 100% at 50% 0%); }
-        .cat-bar { display: flex; justify-content: center; gap: 8px; padding: 15px; background: #0f172a; position: sticky; top: 0; z-index: 1000; overflow-x: auto; scrollbar-width: none; }
-        .cat-item { color: #94a3b8; cursor: pointer; font-weight: 600; padding: 8px 12px; white-space: nowrap; font-size: 0.85rem; }
-        .cat-item.active { color: var(--accent); background: rgba(190, 242, 100, 0.1); border-radius: 8px; }
-        .filter-wrapper { background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); position: sticky; top: 51px; z-index: 900; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding: 0 15px; max-width: 1200px; margin: 0 auto; scrollbar-width: none; }
-        .filter-btn { padding: 6px 18px; border-radius: 50px; border: 1px solid #ddd; background: white; white-space: nowrap; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
-        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .search-area { max-width: 1200px; margin: 15px auto; padding: 0 15px; }
-        #search-box { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #e2e8f0; font-size: 1rem; outline: none; box-sizing: border-box; }
-        main { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-        .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        
-        /* 💡 載入動畫 (Spotlight Pulse) */
-        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 0; grid-column: 1 / -1; }
-        .loader { width: 48px; height: 48px; border: 5px solid var(--accent); border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
-        .loader-text { margin-top: 20px; font-weight: 700; color: #94a3b8; letter-spacing: 2px; font-size: 0.9rem; animation: pulse 1.5s infinite; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        :root { 
+            --primary: #6366f1; 
+            --accent: #bef264; 
+            --bg-dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
 
-        .card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; position: relative; }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 3px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; z-index: 5; }
-        .card-img { width: 100%; height: 160px; object-fit: cover; background: #eee; cursor: pointer; }
-        .card-body { padding: 18px; flex-grow: 1; cursor: pointer; text-decoration: none; color: inherit; display: block; }
-        h3 { margin: 0 0 10px 0; font-size: 1rem; line-height: 1.4; color: #1e293b; font-weight: 700; }
-        @media (prefers-color-scheme: dark) { h3 { color: white; } }
-        .meta { font-size: 0.75rem; color: #64748b; margin-bottom: 6px; display: block; }
-        .card-footer { padding: 12px 18px; background: #fcfcfc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-        .btn-link { color: var(--primary); text-decoration: none; font-size: 0.75rem; font-weight: 700; }
-        .btn-org { font-size: 0.75rem; color: #94a3b8; text-decoration: underline; }
+        /* 💡 核心：動態流動背景 */
+        body {
+            margin: 0;
+            padding-bottom: 80px;
+            font-family: 'PingFang TC', sans-serif;
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #0f172a);
+            background-size: 400% 400%;
+            animation: auroraFlow 15s ease infinite;
+            color: white;
+            min-height: 100vh;
+        }
+
+        @keyframes auroraFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 💡 毛玻璃頂部欄 */
+        .cat-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            overflow-x: auto;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cat-item { color: #94a3b8; cursor: pointer; font-weight: 600; padding: 8px 16px; white-space: nowrap; transition: 0.3s; }
+        .cat-item.active { color: var(--accent); background: rgba(190, 242, 100, 0.1); border-radius: 50px; }
+
+        header {
+            padding: 60px 20px;
+            text-align: center;
+            background: transparent;
+        }
+
+        header h1 { font-size: 2.5rem; margin: 0; letter-spacing: 2px; text-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+        header p { opacity: 0.7; font-size: 0.9rem; margin-top: 10px; }
+
+        /* 💡 篩選列 */
+        .filter-wrapper {
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 62px;
+            z-index: 900;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px; max-width: 1200px; margin: 0 auto; scrollbar-width: none; }
+        .filter-btn {
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            white-space: nowrap;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .filter-btn.active { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
+
+        .search-area { max-width: 1200px; margin: 25px auto; padding: 0 20px; }
+        #search-box {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            outline: none;
+            backdrop-filter: blur(5px);
+        }
+
+        main { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; align-items: stretch; }
+
+        /* 💡 卡片設計強化 */
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(5px);
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+
+        .tag { position: absolute; top: 15px; left: 15px; background: var(--primary); color: white; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; z-index: 5; }
+        .card-img { width: 100%; height: 180px; object-fit: cover; background: #1e293b; display: block; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .card-body { padding: 22px; flex-grow: 1; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+        
+        h3 { margin: 0 0 12px 0; font-size: 1.1rem; line-height: 1.5; font-weight: 700; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: #f8fafc; }
+        .meta { font-size: 0.8rem; color: #94a3b8; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        
+        .card-footer { padding: 15px 22px; background: rgba(15, 23, 42, 0.5); border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; }
+        .btn-link { color: var(--accent); text-decoration: none; font-size: 0.8rem; font-weight: 800; }
+        .btn-org { font-size: 0.75rem; color: #64748b; text-decoration: none; }
+
+        /* 載入動畫 */
+        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 0; grid-column: 1 / -1; }
+        .loader { width: 50px; height: 50px; border: 4px solid var(--accent); border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; box-shadow: 0 0 15px var(--accent); }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -53,7 +138,12 @@
         <div class="cat-item" onclick="changeCategory('戲劇', this)">戲劇舞台</div>
         <div class="cat-item" onclick="changeCategory('市集', this)">市集/綜合</div>
     </div>
-    <header><h1>🎭 幕前 Stage</h1><p>全台精選展演．AI 智慧篩選</p></header>
+
+    <header>
+        <h1>🎭 幕前 Stage</h1>
+        <p>全台展演．光影追蹤</p>
+    </header>
+
     <div class="filter-wrapper">
         <div class="filter-bar">
             <button class="filter-btn active" onclick="changeCity('全部', this)">全部</button>
@@ -62,45 +152,42 @@
             <button class="filter-btn" onclick="changeCity('高雄', this)">高雄</button>
         </div>
     </div>
-    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動、場館、松菸..." oninput="filterEvents()"></div>
+
+    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動名稱、場館..."></div>
+    
     <main id="event-container"></main>
+
     <script>
         let allEvents = [];
         let currentCity = '全部', currentCategory = '視覺';
-        const themes = { '視覺': '#4f46e5', '音樂': '#f43f5e', '戲劇': '#7e22ce', '市集': '#ec4899' };
         
         async function fetchEvents() {
             const container = document.getElementById('event-container');
-            // 💡 注入新的動態 Loader
-            container.innerHTML = `
-                <div class="loading-container">
-                    <span class="loader"></span>
-                    <div class="loader-text">舞台準備中...</div>
-                </div>`;
+            container.innerHTML = `<div class="loading-container"><span class="loader"></span></div>`;
             try {
                 const res = await fetch(`/api/events?city=${currentCity}&category=${currentCategory}`);
                 allEvents = await res.json();
                 renderEvents(allEvents);
-            } catch (e) { container.innerHTML = '<div class="loading-container">連線超時，請重新整理 😭</div>'; }
+            } catch (e) { container.innerHTML = '<div class="loading-container">連線超時 😭</div>'; }
         }
 
         function renderEvents(events) {
             const container = document.getElementById('event-container');
-            if (events.length === 0) { container.innerHTML = '<div class="loading-container">😭 目前沒有適合的演出</div>'; return; }
+            if (events.length === 0) { container.innerHTML = '<div class="loading-container">😭 找不到活動</div>'; return; }
             container.innerHTML = `<div class="event-grid">${events.map(event => `
                 <div class="card">
                     <div class="tag">${event.tag}</div>
-                    <a href="${event.cultureUrl}" target="_blank" class="card-link">
+                    <a href="${event.mainUrl}" target="_blank" class="card-link" style="text-decoration:none; color:inherit; display:contents;">
                         <img class="card-img" src="${event.img}" onerror="this.src='https://picsum.photos/600/400?random=${event.id}';">
                         <div class="card-body">
                             <h3>${event.title}</h3>
-                            <span class="meta">📍 ${event.location}</span>
-                            <span class="meta">📅 ${event.date}</span>
+                            <div class="meta">📍 ${event.location}</div>
+                            <div class="meta">📅 ${event.date}</div>
                         </div>
                     </a>
                     <div class="card-footer">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-link">📍 開啟地圖</a>
-                        ${event.organizerUrl ? `<a href="${event.organizerUrl}" target="_blank" class="btn-org">主辦官網</a>` : ''}
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-link">📍 地圖導航</a>
+                        <a href="${event.backupUrl}" target="_blank" class="btn-org">詳細資訊</a>
                     </div>
                 </div>`).join('')}</div>`;
         }
@@ -111,7 +198,7 @@
         }
 
         function changeCity(city, btn) { currentCity = city; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); fetchEvents(); }
-        function changeCategory(cat, el) { currentCategory = cat; document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); document.documentElement.style.setProperty('--aurora', themes[cat]); fetchEvents(); }
+        function changeCategory(cat, el) { currentCategory = cat; document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); fetchEvents(); }
         fetchEvents();
     </script>
 </body>
