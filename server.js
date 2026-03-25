@@ -45,3 +45,5 @@ app.get('/api/events', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ 幕前 App 已就緒！請造訪：http://localhost:${PORT}`);
 });
+// 在最後一行加入這個，Vercel 才能識別你的 Express App
+module.exports = app;
