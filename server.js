@@ -12,7 +12,6 @@ app.get('/api/events', async (req, res) => {
     const response = await axios.get(url, { timeout: 6000 });
     const allData = response.data;
 
-    // 擴張城市清單
     const cityKeywords = {
       '台北': ['台北', '臺北', '信義', '中正', '松山', '中山', '北投', '士林', '內湖', '文山'],
       '桃園': ['桃園', '中壢', '平鎮', '八德', '楊梅', '蘆竹'],
@@ -31,14 +30,19 @@ app.get('/api/events', async (req, res) => {
       });
     }
 
-    const events = filteredData.slice(0, 15).map(item => {
-      // 這裡我們多抓了 imageUrl 欄位
+    // 💡 增加到 20 筆，讓網格看起來更豐富
+    const events = filteredData.slice(0, 20).map((item, index) => {
+      // 處理圖片：如果原始網址是 http，強行換成 https 試試看
+      let safeImg = item.imageUrl ? item.imageUrl.replace('http://', 'https://') : '';
+      
       return {
         title: item.title,
         location: item.showInfo[0]?.locationName || '地點詳見官網',
         date: item.startDate + ' ~ ' + item.endDate,
-        description: (item.descriptionFilterHtml || "").substring(0, 70) + '...',
-        img: item.imageUrl || 'https://images.unsplash.com/photo-1514525253361-bee8a48790c3?w=500&q=80', // 如果沒圖，就給一張漂亮的預設圖
+        description: (item.descriptionFilterHtml || "").substring(0, 60) + '...',
+        img: safeImg,
+        // 隨機給幾種漂亮的預設背景圖，防止一片空白
+        fallbackImg: `https://picsum.photos/seed/${index + 123}/600/400`, 
         aiSummary: item.title.includes("館") ? "🏛️ 推薦：室內優質展出，適合深度文藝愛好者。" : "✨ 推薦：當季熱門展覽，週末打卡首選！"
       };
     });
