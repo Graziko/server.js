@@ -25,6 +25,14 @@
         #search-box { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #e2e8f0; font-size: 1rem; outline: none; box-sizing: border-box; }
         main { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
         .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
+        /* 💡 載入動畫 (Spotlight Pulse) */
+        .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 0; grid-column: 1 / -1; }
+        .loader { width: 48px; height: 48px; border: 5px solid var(--accent); border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+        .loader-text { margin-top: 20px; font-weight: 700; color: #94a3b8; letter-spacing: 2px; font-size: 0.9rem; animation: pulse 1.5s infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
         .card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; position: relative; }
         .card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 3px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; z-index: 5; }
@@ -33,11 +41,9 @@
         h3 { margin: 0 0 10px 0; font-size: 1rem; line-height: 1.4; color: #1e293b; font-weight: 700; }
         @media (prefers-color-scheme: dark) { h3 { color: white; } }
         .meta { font-size: 0.75rem; color: #64748b; margin-bottom: 6px; display: block; }
-        
         .card-footer { padding: 12px 18px; background: #fcfcfc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
         .btn-link { color: var(--primary); text-decoration: none; font-size: 0.75rem; font-weight: 700; }
         .btn-org { font-size: 0.75rem; color: #94a3b8; text-decoration: underline; }
-        .loading { text-align: center; padding: 60px 0; color: #94a3b8; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
@@ -47,7 +53,7 @@
         <div class="cat-item" onclick="changeCategory('戲劇', this)">戲劇舞台</div>
         <div class="cat-item" onclick="changeCategory('市集', this)">市集/綜合</div>
     </div>
-    <header><h1>🎭 幕前 Stage</h1><p>全台精選展演．絕對穩定版</p></header>
+    <header><h1>🎭 幕前 Stage</h1><p>全台精選展演．AI 智慧篩選</p></header>
     <div class="filter-wrapper">
         <div class="filter-bar">
             <button class="filter-btn active" onclick="changeCity('全部', this)">全部</button>
@@ -56,24 +62,31 @@
             <button class="filter-btn" onclick="changeCity('高雄', this)">高雄</button>
         </div>
     </div>
-    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動、場館..." oninput="filterEvents()"></div>
+    <div class="search-area"><input type="text" id="search-box" placeholder="🔍 搜尋活動、場館、松菸..." oninput="filterEvents()"></div>
     <main id="event-container"></main>
     <script>
         let allEvents = [];
         let currentCity = '全部', currentCategory = '視覺';
         const themes = { '視覺': '#4f46e5', '音樂': '#f43f5e', '戲劇': '#7e22ce', '市集': '#ec4899' };
+        
         async function fetchEvents() {
             const container = document.getElementById('event-container');
-            container.innerHTML = '<div class="loading">✨ 正在調度穩定線路...</div>';
+            // 💡 注入新的動態 Loader
+            container.innerHTML = `
+                <div class="loading-container">
+                    <span class="loader"></span>
+                    <div class="loader-text">舞台準備中...</div>
+                </div>`;
             try {
                 const res = await fetch(`/api/events?city=${currentCity}&category=${currentCategory}`);
                 allEvents = await res.json();
                 renderEvents(allEvents);
-            } catch (e) { container.innerHTML = '連線失敗 😭'; }
+            } catch (e) { container.innerHTML = '<div class="loading-container">連線超時，請重新整理 😭</div>'; }
         }
+
         function renderEvents(events) {
             const container = document.getElementById('event-container');
-            if (events.length === 0) { container.innerHTML = '<div class="loading">😭 找不到活動</div>'; return; }
+            if (events.length === 0) { container.innerHTML = '<div class="loading-container">😭 目前沒有適合的演出</div>'; return; }
             container.innerHTML = `<div class="event-grid">${events.map(event => `
                 <div class="card">
                     <div class="tag">${event.tag}</div>
@@ -86,15 +99,17 @@
                         </div>
                     </a>
                     <div class="card-footer">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-link">📍 地圖導航</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.searchQuery)}" target="_blank" class="btn-link">📍 開啟地圖</a>
                         ${event.organizerUrl ? `<a href="${event.organizerUrl}" target="_blank" class="btn-org">主辦官網</a>` : ''}
                     </div>
                 </div>`).join('')}</div>`;
         }
+
         function filterEvents() {
             const term = document.getElementById('search-box').value.toLowerCase();
             renderEvents(allEvents.filter(e => e.title.toLowerCase().includes(term) || e.location.toLowerCase().includes(term)));
         }
+
         function changeCity(city, btn) { currentCity = city; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); fetchEvents(); }
         function changeCategory(cat, el) { currentCategory = cat; document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); document.documentElement.style.setProperty('--aurora', themes[cat]); fetchEvents(); }
         fetchEvents();
